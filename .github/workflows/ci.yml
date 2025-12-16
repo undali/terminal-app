@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'          # Releases are created when a tag like v1.2.3 is pushed
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build, test and upload artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache cargo registry and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Rust toolchain (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Build (release)
+        run: cargo build --release --verbose
+
+      - name: Run tests
+        run: cargo test --all --verbose
+
+      - name: (Optional) Run clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          # Fail the workflow on warnings; remove `-- -D warnings` if you prefer non-failing
+          args: -- -D warnings
+
+      - name: Upload release-ready binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: minigrep-linux
+          path: target/release/minigrep
+
+  release:
+    name: Create GitHub Release (on tag)
+    needs: build
+    runs-on: ubuntu-latest
+    # Only run this job when a tag is pushed (refs/tags/*)
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download built artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: minigrep-linux
+          path: .
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            Automated release created by GitHub Actions for tag ${{ github.ref_name }}.
+          draft: false
+          prerelease: false
+
+      - name: Upload binary to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          # The artifact preserves its path when uploaded; the original path was target/release/minigrep
+          asset_path: target/release/minigrep
+          asset_name: minigrep-${{ github.ref_name }}-x86_64-unknown-linux-gnu
+          asset_content_type: application/octet-stream
+
+# Notes:
+# - This workflow builds and tests on every push to `main` and on pull requests.
+# - When you push a tag matching `v*` (for example `v1.0.0`), the `release` job
+#   will run and create a GitHub release with the compiled binary attached.
+# - If you'd like a release on every push to `main` instead, change the `if:` condition
+#   on the `release` job (but creating releases from ordinary commits is less common).
+# - For multi-platform releases (Windows/macOS), add separate matrix jobs or use cross-compilation steps.

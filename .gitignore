@@ -1,1 +1,57 @@
 /target
+
+# Build / release artifacts
+/dist
+/release
+/release-*
+/*.tar
+/*.tar.gz
+/*.tgz
+/*.zip
+/*.deb
+/*.AppImage
+
+# Cargo
+/Cargo.lock
+
+# Editor temporary files
+*~
+*.swp
+*.swx
+*.swo
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Template for RELEASE_NOTES.md
+# Create a file named `RELEASE_NOTES.md` at the repository root and use the
+# following template to draft release notes for each tagged release.
+#
+# ---
+# Release: vX.Y.Z
+# Date: YYYY-MM-DD
+#
+# Summary
+# A short, one-line summary of the release.
+#
+# Highlights
+# - Feature: Brief description of a significant new feature.
+# - Fix: Brief description of an important bug fix.
+# - Improvement: Any notable performance or UX improvements.
+#
+# Breaking Changes
+# - Describe any breaking changes and migration steps (if applicable).
+#
+# Contributors
+# - @username — description of contribution
+#
+# Changelog
+# - PR #123: Short description of change
+# - PR #124: Short description of change
+#
+# Notes
+# - Any additional notes or known issues.
+# ---
