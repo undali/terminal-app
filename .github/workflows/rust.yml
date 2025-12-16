@@ -29,6 +29,26 @@ jobs:
         run: |
           echo "TAG=v$(date +'%Y.%m.%d').${{ github.run_number }}" >> $GITHUB_OUTPUT
 
+      # Filter release files to exclude zero-size files and dotfiles
+      - name: Filter release files
+        id: filter
+        run: |
+          set -euo pipefail
+          # collect regular files in target/release that are not dotfiles and have size > 0
+          mapfile -t files < <(find target/release -maxdepth 1 -type f ! -name ".*" -size +0c -print)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No files to upload"
+            # ensure the output exists but is empty
+            echo "files=" >> $GITHUB_OUTPUT
+          else
+            # set a multiline output containing one file path per line
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            for f in "${files[@]}"; do
+              echo "$f" >> $GITHUB_OUTPUT
+            done
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
       # Create GitHub Release
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -38,5 +58,4 @@ jobs:
           body: |
             Automated release from commit:
             ${{ github.sha }}
-          files: |
-            target/release/*
+          files: ${{ steps.filter.outputs.files }}
