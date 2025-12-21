@@ -1,7 +1,22 @@
 pub mod grep {
+    use colored::*;
     use std::env;
     use std::error::Error;
     use std::fs;
+
+    fn print_color(text: &str, target: &str) {
+        let lower = text.to_lowercase();
+        let t = target.to_lowercase();
+
+        if let Some(i) = lower.find(&t) {
+            let j = i + target.len();
+            print!("{}", &text[..i]);
+            print!("{}", &text[i..j].green().bold());
+            println!("{}", &text[j..]);
+        } else {
+            println!("{text}");
+        }
+    }
 
     pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
         let contents = fs::read_to_string(&config.filename)?;
@@ -13,35 +28,25 @@ pub mod grep {
         };
 
         for line in results {
-            println!("{line}");
+            print_color(line, &config.query);
         }
 
         Ok(())
     }
 
     pub fn search_strict<'a>(contents: &'a str, query: &str) -> Vec<&'a str> {
-        let mut v = Vec::new();
-
-        for line in contents.lines() {
-            if line.contains(query) {
-                v.push(line);
-            }
-        }
-
-        v
+        contents
+            .lines()
+            .filter(|line| line.contains(query))
+            .collect()
     }
 
     pub fn search_case_insensitive<'a>(contents: &'a str, query: &str) -> Vec<&'a str> {
-        let mut v = Vec::new();
         let query = query.to_lowercase();
-
-        for line in contents.lines() {
-            if line.to_lowercase().contains(&query) {
-                v.push(line);
-            }
-        }
-
-        v
+        contents
+            .lines()
+            .filter(|line| line.to_lowercase().contains(&query))
+            .collect()
     }
 
     pub struct Config {

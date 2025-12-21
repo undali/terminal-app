@@ -10,7 +10,7 @@ fn main() {
         process::exit(1);
     });
     println!(
-        "Searching for '{}' in file '{}'",
+        "Searching for '{}' in file '{}':\n-----------------------------------------------------",
         config.query, config.filename
     );
 
