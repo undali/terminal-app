@@ -1,7 +1,11 @@
 [package]
-name = "minigrep"
+name = "minigrep_tuhin"
 version = "0.1.0"
 edition = "2024"
+description = "A mini grep tool implemented in Rust"
+license = "MIT"
+authors = ["Tuhin <tuhinbc2@gmail.com>"]
+repository = "https://github.com/undali/terminal-app"
 
 [dependencies]
-colored = "*"
+colored = "3.0.0"

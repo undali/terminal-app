@@ -1,4 +1,4 @@
-use minigrep::grep::*;
+use minigrep_tuhin::grep::*;
 use std::env;
 use std::process;
 
@@ -7,7 +7,7 @@ fn main() {
     // println!("Arguments: {:?}", args);
     let config = Config::new(&args).unwrap_or_else(|err| {
         eprintln!("Error: {}", err);
-        process::exit(1);
+        process::exit(0);
     });
     println!(
         "Searching for '{}' in file '{}':\n-----------------------------------------------------",

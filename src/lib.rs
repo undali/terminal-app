@@ -1,5 +1,5 @@
 pub mod grep {
-    use colored::*;
+    use colored::Colorize;
     use std::env;
     use std::error::Error;
     use std::fs;
